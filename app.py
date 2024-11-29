@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget, QLabel, QMainWindow, QHBoxLayout, QLineEdit, QGridLayout, QHeaderView
 from PyQt6 import QtCore, QtGui, QtWidgets
 import pandas as pd
-
+from db import educationsTable, unitsTable, positionsTable
 
 #Отрисовка таблицы
 class TableModel(QtCore.QAbstractTableModel):
@@ -41,35 +41,42 @@ class educationsWindowAdding(QWidget):
         layoutItems = QVBoxLayout()
         layout = QHBoxLayout()
         self.inputName = QLineEdit()
+        self.inputEduId = QLineEdit()
         btnAdd = QPushButton(text = "Добавить")
         btnAdd.setFixedSize(170, 30)
-        labelName = QLabel("Название образования(строка)", )
+        labelEduId = QLabel("Код образования(число)")
+        labelName = QLabel("Тип образования образования(строка)", )
         labelStatus = QLabel()
         labelStatus.setFixedHeight(45)
-        layoutInputsAndLabels.addWidget(labelName, 0,0)
-        layoutInputsAndLabels.addWidget(self.inputName, 1,0)
+        layoutInputsAndLabels.addWidget(labelEduId, 0,0)
+        layoutInputsAndLabels.addWidget(labelName, 0,1)
+        layoutInputsAndLabels.addWidget(self.inputEduId, 1,0)
+        layoutInputsAndLabels.addWidget(self.inputName, 1,1)
         layoutBtns.addWidget(btnAdd)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["Код образования", "Название"]
-        lst = [
-          [1, 9],
-          [1, 0],
-          [3, 5],
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["Код образования", "Тип образования"]
+        lst = educationsTable.show_educations_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
         self.setLayout(layout)
-
         btnAdd.clicked.connect(self.adding)
+        
     def adding(self):
-        textName = self.inputName.text()
+        eduId = self.inputEduId.text()
+        eduType = self.inputName.text()
+        educationsTable.add_to_educations_table(edu_id=eduId, eduType=eduType)
+        self.inputEduId.clear()
         self.inputName.clear()
+        lst = educationsTable.show_educations_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
 
 #Удаление образования
 class educationsWindowDeletion(QWidget):
@@ -93,22 +100,24 @@ class educationsWindowDeletion(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["Код образования", "Название"]
-        lst = [
-          [1, 9],
-          [1, 0],
-          [3, 5],
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["Код образования", "Тип образования"]
+        lst = educationsTable.show_educations_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
         self.setLayout(layout)
-
         btnDel.clicked.connect(self.deletion)
+        
     def deletion(self):
-        print()
+        eduId = self.inputId.text()
+        educationsTable.delete_from_education_table(edu_id=eduId)
+        lst = educationsTable.show_educations_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        
 
 #Изменение образования
 class educationsWindowChanging(QWidget):
@@ -119,32 +128,27 @@ class educationsWindowChanging(QWidget):
         layoutBtns = QHBoxLayout()
         layoutItems = QVBoxLayout()
         layout = QHBoxLayout()
-        self.inputIdOld = QLineEdit()
-        self.inputIdNew = QLineEdit()
+        self.inputEduId = QLineEdit()
         self.inputNameNew = QLineEdit()
         btnChange = QPushButton(text = "Изменить")
         btnChange.setFixedSize(170, 30)
-        labelIdNew = QLabel("Код образования(число)", )
-        labelNameNew = QLabel("Название образования(строка) новое", )
+        labelEduId = QLabel("Код образования(число)")
+        labelNameNew = QLabel("Тип образования(строка) новое")
         labelStatus = QLabel()
         labelStatus.setFixedHeight(45)
-        layoutInputsAndLabels.addWidget(labelIdNew, 2,0)
-        layoutInputsAndLabels.addWidget(labelNameNew, 2,1)
-        layoutInputsAndLabels.addWidget(self.inputIdNew, 3,0)
-        layoutInputsAndLabels.addWidget(self.inputNameNew, 3,1)
+        layoutInputsAndLabels.addWidget(labelEduId, 0,0)
+        layoutInputsAndLabels.addWidget(labelNameNew, 0,1)
+        layoutInputsAndLabels.addWidget(self.inputEduId, 1,0)
+        layoutInputsAndLabels.addWidget(self.inputNameNew, 1,1)
         layoutBtns.addWidget(btnChange)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["Код образования", "Название"]
-        lst = [
-          [1, 9],
-          [1, 0],
-          [3, 5],
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["Код образования", "Тип образования"]
+        lst = educationsTable.show_educations_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
@@ -152,7 +156,15 @@ class educationsWindowChanging(QWidget):
 
         btnChange.clicked.connect(self.changing)
     def changing(self):
-        print()
+        eduId = self.inputEduId.text()
+        eduType = self.inputNameNew.text()
+        educationsTable.update_education_table(edu_id=eduId, eduType=eduType)
+        self.inputEduId.clear()
+        self.inputNameNew.clear()
+        lst = educationsTable.show_educations_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
 
 #Главное окно по образованию     
 class educationsWindow(QWidget):
@@ -172,12 +184,8 @@ class educationsWindow(QWidget):
         layoutItems.addWidget(btnRemoveEducations)
         layoutItems.addWidget(btnEditEducations)
         self.table = QtWidgets.QTableView()
-        clmns = ["Код образования", "Тип"]
-        lst = [
-          [1, 9],
-          [1, 0],
-          [3, 5],
-        ]
+        clmns =  ["Код образования", "Тип образования"]
+        lst = educationsTable.show_educations_table()
         data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
         self.model = TableModel(data)
         self.table.setModel(self.model)
@@ -211,7 +219,7 @@ class unitsWindowAdding(QWidget):
         self.inputName = QLineEdit()
         btnAdd = QPushButton(text = "Добавить")
         btnAdd.setFixedSize(170, 30)
-        labelName = QLabel("Отделения(строка)", )
+        labelName = QLabel("Отделения(строка)" )
         labelStatus = QLabel()
         labelStatus.setFixedHeight(45)
         layoutInputsAndLabels.addWidget(labelName, 0,0)
@@ -221,14 +229,10 @@ class unitsWindowAdding(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "Отделение"]
-        lst = [
-          [1, 9],
-          [1, 0],
-          [3, 5],
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["Код отделения", "Отделение"]
+        lst = unitsTable.show_units_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
@@ -236,8 +240,13 @@ class unitsWindowAdding(QWidget):
 
         btnAdd.clicked.connect(self.adding)
     def adding(self):
-        textName = self.inputName.text()
+        unitName = self.inputName.text()
         self.inputName.clear()
+        unitsTable.add_to_units_table(unit = unitName)
+        lst = unitsTable.show_units_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
 
 #Удаление отделения
 class unitsWindowDeletion(QWidget):
@@ -261,22 +270,24 @@ class unitsWindowDeletion(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "Отделение"]
-        lst = [
-          [1, 9],
-          [1, 0],
-          [3, 5],
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["Код отделения", "Отделение"]
+        lst = unitsTable.show_units_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
         self.setLayout(layout)
-
         btnDel.clicked.connect(self.deletion)
+        
     def deletion(self):
-        print()
+        unitId = self.inputId.text()
+        unitsTable.delete_from_education_table(unit_id=unitId)
+        lst = unitsTable.show_units_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        self.inputId.clear()
 
 #Изменение отделения
 class unitsWindowChanging(QWidget):
@@ -287,40 +298,42 @@ class unitsWindowChanging(QWidget):
         layoutBtns = QHBoxLayout()
         layoutItems = QVBoxLayout()
         layout = QHBoxLayout()
-        self.inputIdOld = QLineEdit()
-        self.inputIdNew = QLineEdit()
+        self.inputId = QLineEdit()
         self.inputNameNew = QLineEdit()
         btnChange = QPushButton(text = "Изменить")
         btnChange.setFixedSize(170, 30)
-        labelIdNew = QLabel("Код отделения(число)", )
+        labelId = QLabel("Код отделения(число)", )
         labelNameNew = QLabel("Отделение(строка) новое", )
         labelStatus = QLabel()
         labelStatus.setFixedHeight(45)
-        layoutInputsAndLabels.addWidget(labelIdNew, 2,0)
-        layoutInputsAndLabels.addWidget(labelNameNew, 2,1)
-        layoutInputsAndLabels.addWidget(self.inputIdNew, 3,0)
-        layoutInputsAndLabels.addWidget(self.inputNameNew, 3,1)
+        layoutInputsAndLabels.addWidget(labelId, 0,0)
+        layoutInputsAndLabels.addWidget(labelNameNew, 0,1)
+        layoutInputsAndLabels.addWidget(self.inputId, 1,0)
+        layoutInputsAndLabels.addWidget(self.inputNameNew, 1,1)
         layoutBtns.addWidget(btnChange)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "Отделение"]
-        lst = [
-          [1, 9],
-          [1, 0],
-          [3, 5],
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["Код отделения", "Отделение"]
+        lst = unitsTable.show_units_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
         self.setLayout(layout)
-
         btnChange.clicked.connect(self.changing)
     def changing(self):
-        print()
+        unitId = self.inputId.text()
+        unit = self.inputNameNew.text()
+        unitsTable.update_education_table(unit_id=unitId, unit = unit)
+        self.inputId.clear()
+        self.inputNameNew.clear()
+        lst = unitsTable.show_units_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
         
           
 #Главное окно по отделениям
@@ -342,12 +355,8 @@ class unitsWindow(QWidget):
         layoutItems.addWidget(btnRemoveUnits)
         layoutItems.addWidget(btnEditUnits)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "Отделение"]
-        lst = [
-          [1, 9],
-          [1, 0],
-          [3, 5],
-        ]
+        clmns = ["Код отделения", "Отделение"]
+        lst = unitsTable.show_units_table()
         data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
         self.model = TableModel(data)
         self.table.setModel(self.model)
@@ -382,7 +391,7 @@ class positionsWindowAdding(QWidget):
         self.inputName = QLineEdit()
         btnAdd = QPushButton(text = "Добавить")
         btnAdd.setFixedSize(170, 30)
-        labelName = QLabel("Должность(строка)", )
+        labelName = QLabel("Должность(строка)")
         labelStatus = QLabel()
         labelStatus.setFixedHeight(45)
         layoutInputsAndLabels.addWidget(labelName, 0,0)
@@ -392,14 +401,10 @@ class positionsWindowAdding(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "Должность"]
-        lst = [
-          [1, 9],
-          [1, 0],
-          [3, 5],
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["Код должности", "Должность"]
+        lst = positionsTable.show_positions_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
@@ -407,8 +412,13 @@ class positionsWindowAdding(QWidget):
 
         btnAdd.clicked.connect(self.adding)
     def adding(self):
-        textName = self.inputName.text()
+        postName = self.inputName.text()
         self.inputName.clear()
+        positionsTable.add_to_positions_table(post = postName)
+        lst = positionsTable.show_positions_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
 
 #Удаление должности
 class positionsWindowDeletion(QWidget):
@@ -432,14 +442,10 @@ class positionsWindowDeletion(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "Должность"]
-        lst = [
-          [1, 9],
-          [1, 0],
-          [3, 5],
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["Код должности", "Должность"]
+        lst = positionsTable.show_positions_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
@@ -447,7 +453,14 @@ class positionsWindowDeletion(QWidget):
 
         btnDel.clicked.connect(self.deletion)
     def deletion(self):
-        print()
+        postId = self.inputId.text()
+        self.inputId.clear()
+        positionsTable.delete_from_positions_table(post_id = postId)
+        lst = positionsTable.show_positions_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+
 
 #Изменение должности
 class positionsWindowChanging(QWidget):
@@ -458,32 +471,27 @@ class positionsWindowChanging(QWidget):
         layoutBtns = QHBoxLayout()
         layoutItems = QVBoxLayout()
         layout = QHBoxLayout()
-        self.inputIdOld = QLineEdit()
-        self.inputIdNew = QLineEdit()
+        self.inputId = QLineEdit()
         self.inputNameNew = QLineEdit()
         btnChange = QPushButton(text = "Изменить")
         btnChange.setFixedSize(170, 30)
-        labelIdNew = QLabel("Код должности(число)" )
+        labelId = QLabel("Код должности(число)" )
         labelNameNew = QLabel("Должность(строка) новая")
         labelStatus = QLabel()
         labelStatus.setFixedHeight(45)
-        layoutInputsAndLabels.addWidget(labelIdNew, 2,0)
-        layoutInputsAndLabels.addWidget(labelNameNew, 2,1)
-        layoutInputsAndLabels.addWidget(self.inputIdNew, 3,0)
-        layoutInputsAndLabels.addWidget(self.inputNameNew, 3,1)
+        layoutInputsAndLabels.addWidget(labelId ,0,0)
+        layoutInputsAndLabels.addWidget(labelNameNew, 0,1)
+        layoutInputsAndLabels.addWidget(self.inputId, 1,0)
+        layoutInputsAndLabels.addWidget(self.inputNameNew, 1,1)
         layoutBtns.addWidget(btnChange)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "Должность"]
-        lst = [
-          [1, 9],
-          [1, 0],
-          [3, 5],
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["Код должности", "Должность"]
+        lst = positionsTable.show_positions_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
@@ -491,7 +499,15 @@ class positionsWindowChanging(QWidget):
 
         btnChange.clicked.connect(self.changing)
     def changing(self):
-        print()
+        postId = self.inputId.text()
+        post = self.inputNameNew.text()
+        positionsTable.update_positions_table(post_id=postId, post = post)
+        self.inputId.clear()
+        self.inputNameNew.clear()
+        lst = positionsTable.show_positions_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
         
         
 #Главное окно по должностям      
@@ -500,7 +516,6 @@ class positionsWindow(QWidget):
         super().__init__()
         self.setFixedSize(QSize(450, 400))
         self.setWindowTitle("Должности")
-        
         btnAddPositions = QPushButton(text = "Добавить должность")
         btnAddPositions.setFixedSize(170, 60)
         btnRemovePositions = QPushButton(text = "Удалить должность")
@@ -513,12 +528,8 @@ class positionsWindow(QWidget):
         layoutItems.addWidget(btnRemovePositions)
         layoutItems.addWidget(btnEditPositions)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "Должность"]
-        lst = [
-          [1, 9],
-          [1, 0],
-          [3, 5],
-        ]
+        clmns = ["Код должности", "Должность"]
+        lst = positionsTable.show_positions_table()
         data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
         self.model = TableModel(data)
         self.table.setModel(self.model)
