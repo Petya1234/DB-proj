@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget, QLabel, QMainWindow, QHBoxLayout, QLineEdit, QGridLayout, QHeaderView
 from PyQt6 import QtCore, QtGui, QtWidgets
 import pandas as pd
-from db import educationsTable, unitsTable, positionsTable
+from db import educationsTable, unitsTable, positionsTable, employeesTable, stringsTable
 
 #Отрисовка таблицы
 class TableModel(QtCore.QAbstractTableModel):
@@ -77,6 +77,7 @@ class educationsWindowAdding(QWidget):
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
+        window.educations.table.setModel(self.model)
 
 #Удаление образования
 class educationsWindowDeletion(QWidget):
@@ -117,6 +118,7 @@ class educationsWindowDeletion(QWidget):
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
+        window.educations.table.setModel(self.model)
         
 
 #Изменение образования
@@ -165,6 +167,7 @@ class educationsWindowChanging(QWidget):
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
+        window.educations.table.setModel(self.model)
 
 #Главное окно по образованию     
 class educationsWindow(QWidget):
@@ -247,6 +250,7 @@ class unitsWindowAdding(QWidget):
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
+        window.units.table.setModel(self.model)
 
 #Удаление отделения
 class unitsWindowDeletion(QWidget):
@@ -288,6 +292,7 @@ class unitsWindowDeletion(QWidget):
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
         self.inputId.clear()
+        window.units.table.setModel(self.model)
 
 #Изменение отделения
 class unitsWindowChanging(QWidget):
@@ -334,6 +339,7 @@ class unitsWindowChanging(QWidget):
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
+        window.units.table.setModel(self.model)
         
           
 #Главное окно по отделениям
@@ -419,6 +425,7 @@ class positionsWindowAdding(QWidget):
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
+        window.positions.table.setModel(self.model)
 
 #Удаление должности
 class positionsWindowDeletion(QWidget):
@@ -460,6 +467,7 @@ class positionsWindowDeletion(QWidget):
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
+        window.positions.table.setModel(self.model)
 
 
 #Изменение должности
@@ -508,6 +516,7 @@ class positionsWindowChanging(QWidget):
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
+        window.positions.table.setModel(self.model)
         
         
 #Главное окно по должностям      
@@ -581,14 +590,10 @@ class employeesWindowAdding(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "ФИО", "номер телефона", "Код образования" ]
-        lst = [
-          [1, "ФИО1", "89999999999", 1],
-          [1, "ФИО2", "89999999999", 2],
-          [1, "ФИО3", "89999999999", 3]
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["Код сотрудника", "ФИО", "Номер телефона", "Код образования" ]
+        lst = employeesTable.show_employees_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
@@ -596,8 +601,18 @@ class employeesWindowAdding(QWidget):
 
         btnAdd.clicked.connect(self.adding)
     def adding(self):
-        textName = self.inputName.text()
+        surname = self.inputName.text()
+        phoneNum = self.inputPhoneNumber.text()
+        eduId = self.inputEduId.text()
         self.inputName.clear()
+        self.inputPhoneNumber.clear()
+        self.inputEduId.clear()
+        employeesTable.add_to_employees_table(surname=surname, phone_num=phoneNum, edu_id=eduId)
+        lst = employeesTable.show_employees_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        window.employees.table.setModel(self.model)
 
 #Удаление сотрудника
 class employeesWindowDeletion(QWidget):
@@ -623,23 +638,25 @@ class employeesWindowDeletion(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "ФИО", "номер телефона", "Код образования" ]
-        lst = [
-          [1, "ФИО1", "89999999999", 1],
-          [1, "ФИО2", "89999999999", 2],
-          [1, "ФИО3", "89999999999", 3]
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["Код сотрудника", "ФИО", "Номер телефона", "Код образования" ]
+        lst = employeesTable.show_employees_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
         self.setLayout(layout)
-
         btnDel.clicked.connect(self.deletion)
     def deletion(self):
-        print()
-
+        employeeId = self.inputId.text()
+        self.inputId.clear()
+        employeesTable.delete_from_employees_table(employee_id=employeeId)
+        lst = employeesTable.show_employees_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        window.employees.table.setModel(self.model)
+        
 #Изменение данных сотрудника
 class employeesWindowChanging(QWidget):
     def __init__(self):
@@ -675,24 +692,31 @@ class employeesWindowChanging(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "ФИО", "номер телефона", "Код образования" ]
-        lst = [
-          [1, "ФИО1", "89999999999", 1],
-          [1, "ФИО2", "89999999999", 2],
-          [1, "ФИО3", "89999999999", 3]
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["Код сотрудника", "ФИО", "Номер телефона", "Код образования" ]
+        lst = employeesTable.show_employees_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
         self.setLayout(layout)
-
-
         btnChange.clicked.connect(self.changing)
-    def changing(self):
-        print()
         
+    def changing(self):
+        employeeId = self.inputId.text()
+        surnameNew = self.inputName.text()
+        phoneNum = self.inputPhoneNumber.text()
+        eduId = self.inputEduId.text()
+        self.inputId.clear()
+        self.inputName.clear()
+        self.inputPhoneNumber.clear()
+        self.inputEduId.clear()
+        employeesTable.update_employees_table(employee_id=employeeId, surname=surnameNew, phone_number=phoneNum, edu_id=eduId)
+        lst = employeesTable.show_employees_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        window.employees.table.setModel(self.model)
 
 #Главное окно по сотрудникам
 class employeesWindow(QWidget):
@@ -713,12 +737,8 @@ class employeesWindow(QWidget):
         layoutItems.addWidget(btnRemoveEmployees)
         layoutItems.addWidget(btnEditEmployees)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "ФИО", "номер телефона", "Код образования" ]
-        lst = [
-          [1, "ФИО1", "89999999999", 1],
-          [1, "ФИО2", "89999999999", 2],
-          [1, "ФИО3", "89999999999", 3]
-        ]
+        clmns = ["ID", "ФИО", "Номер телефона", "Код образования" ]
+        lst = employeesTable.show_employees_table()
         data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
         self.model = TableModel(data)
         self.table.setModel(self.model)
@@ -745,7 +765,7 @@ class stringsWindowAdding(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Добавление строки")
-        self.setFixedSize(QSize(1600, 200))
+        self.setFixedSize(QSize(1400, 300))
         layoutInputsAndLabels = QGridLayout()
         layoutBtns = QHBoxLayout()
         layoutItems = QVBoxLayout()
@@ -755,8 +775,6 @@ class stringsWindowAdding(QWidget):
         self.inputIdPost = QLineEdit()
         self.inputIdUnit = QLineEdit()
         self.inputSalary = QLineEdit()
-        self.inputPhoneNumber = QLineEdit()
-        self.inputEduId = QLineEdit()
         btnAdd = QPushButton(text = "Добавить")
         btnAdd.setFixedSize(170, 30)
         labelIdEmployee= QLabel("Код сотрудника(число)")
@@ -781,14 +799,10 @@ class stringsWindowAdding(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID строки","Номер сотрудника","Номер записи","Дата назначения", "Номер должности", "Номер отделения", "Зарплата"]
-        lst = [
-            [1,1, 1,"11.11.2011", 1, 1, 50000],
-            [2,2, 1,"11.11.2011", 2, 2, 50000],
-            [3,3, 1,"11.11.2011", 1, 3, 50000]
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["ID строки","Код сотрудника","Дата назначения", "Код должности", "Код отделения", "Зарплата"]
+        lst = stringsTable.show_string_a_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
@@ -801,7 +815,22 @@ class stringsWindowAdding(QWidget):
         header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         btnAdd.clicked.connect(self.adding)
     def adding(self):
-        print()
+        emplId = self.inputIdEmployee.text()
+        assgnDate = self.inputDate.text()
+        postId = self.inputIdPost.text()
+        unitId = self.inputIdUnit.text()
+        salary = self.inputSalary.text()
+        self.inputIdEmployee.clear()
+        self.inputDate.clear()
+        self.inputIdPost.clear()
+        self.inputIdUnit.clear()
+        self.inputSalary.clear()
+        stringsTable.add_to_string_a_table(empl_id=emplId, assign_date=assgnDate, post_id=postId, unit_id=unitId, salary=salary)
+        lst = stringsTable.show_string_a_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        window.strings.table.setModel(self.model)
 
 #Удаление записи
 class stringsWindowDeletion(QWidget):
@@ -935,12 +964,8 @@ class stringsWindow(QWidget):
         layoutItems.addWidget(btnRemoveString)
         layoutItems.addWidget(btnEditString)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID строки","Номер сотрудника","Номер записи","Дата назначения", "Номер должности", "Номер отделения", "Зарплата"]
-        lst = [
-            [1,1, 1,"11.11.2011", 1, 1, 50000],
-            [2,2, 1,"11.11.2011", 2, 2, 50000],
-            [3,3, 1,"11.11.2011", 1, 3, 50000]
-        ]
+        clmns = ["ID строки","Код сотрудника","Дата назначения", "Код должности", "Код отделения", "Зарплата"]
+        lst = stringsTable.show_string_a_table()
         data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
         self.model = TableModel(data)
         self.table.setModel(self.model)
