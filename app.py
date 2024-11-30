@@ -856,14 +856,10 @@ class stringsWindowDeletion(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID строки","Номер сотрудника","Номер записи","Дата назначения", "Номер должности", "Номер отделения", "Зарплата"]
-        lst = [
-            [1,1, 1,"11.11.2011", 1, 1, 50000],
-            [2,2, 1,"11.11.2011", 2, 2, 50000],
-            [3,3, 1,"11.11.2011", 1, 3, 50000]
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["ID строки","Код сотрудника","Дата назначения", "Код должности", "Код отделения", "Зарплата"]
+        lst = stringsTable.show_string_a_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
@@ -876,7 +872,14 @@ class stringsWindowDeletion(QWidget):
         header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         btnDel.clicked.connect(self.deletion)
     def deletion(self):
-        print()
+        stringId = self.inputIdString.text()
+        self.inputIdString.clear()
+        stringsTable.delete_from_string_a_table(string_id= stringId)
+        lst = stringsTable.show_string_a_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        window.strings.table.setModel(self.model)
 
 #Изменение данных записи
 class stringsWindowChanging(QWidget):
@@ -899,11 +902,11 @@ class stringsWindowChanging(QWidget):
         btnChange = QPushButton(text = "Изменить")
         btnChange.setFixedSize(170, 30)
         labelId= QLabel("ID строки для изменения")
-        labelIdEmployee= QLabel("Код сотрудника(число)")
-        labelDate = QLabel("Дата назначения")
-        labelIdPost = QLabel("Код должности")
-        labelIdUnit = QLabel("Код подразделения")
-        labelSalary = QLabel("ЗП")
+        labelIdEmployee= QLabel("Код сотрудника(число) новый")
+        labelDate = QLabel("Дата назначения новая")
+        labelIdPost = QLabel("Код должности новый")
+        labelIdUnit = QLabel("Код подразделения новый")
+        labelSalary = QLabel("ЗП новая")
         labelStatus = QLabel()
         labelStatus.setFixedHeight(45)
         layoutInputsAndLabels.addWidget(labelId, 0,0)
@@ -923,14 +926,10 @@ class stringsWindowChanging(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID строки","Номер сотрудника","Номер записи","Дата назначения", "Номер должности", "Номер отделения", "Зарплата"]
-        lst = [
-            [1,1, 1,"11.11.2011", 1, 1, 50000],
-            [2,2, 1,"11.11.2011", 2, 2, 50000],
-            [3,3, 1,"11.11.2011", 1, 3, 50000]
-        ]
-        data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
-        self.model = TableModel(data)
+        self.clmns = ["ID строки","Код сотрудника","Дата назначения", "Код должности", "Код отделения", "Зарплата"]
+        lst = stringsTable.show_string_a_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
@@ -943,7 +942,24 @@ class stringsWindowChanging(QWidget):
         header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         btnChange.clicked.connect(self.changing)
     def changing(self):
-        print()
+        stringId = self.inputId.text()
+        emlpId = self.inputIdEmployee.text()
+        date = self.inputDate.text()
+        postId = self.inputIdPost.text()
+        unitId = self.inputIdUnit.text()
+        salary = self.inputSalary.text()
+        self.inputId.clear()
+        self.inputIdEmployee.clear()
+        self.inputDate.clear()
+        self.inputIdPost.clear()
+        self.inputIdUnit.clear()
+        self.inputSalary.clear()
+        stringsTable.update_string_a_table(string_id=stringId, empl_id=emlpId, assign_date=date, post_id=postId, unit_id=unitId, salary=salary)
+        lst = stringsTable.show_string_a_table()
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        window.strings.table.setModel(self.model)
 
 #Главное окно по записям
 class stringsWindow(QWidget):
