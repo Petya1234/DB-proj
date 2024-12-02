@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QSize
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget, QLabel, QMainWindow, QHBoxLayout, QLineEdit, QGridLayout, QHeaderView
+from PyQt6.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget, QLabel, QMainWindow, QHBoxLayout, QLineEdit, QGridLayout, QHeaderView, QComboBox
 from PyQt6 import QtCore, QtGui, QtWidgets
 import pandas as pd
 from db import educationsTable, unitsTable, positionsTable, employeesTable, stringsTable
@@ -46,8 +46,9 @@ class educationsWindowAdding(QWidget):
         btnAdd.setFixedSize(170, 30)
         labelEduId = QLabel("Код образования(число)")
         labelName = QLabel("Тип образования образования(строка)", )
-        labelStatus = QLabel()
-        labelStatus.setFixedHeight(45)
+        self.labelStatus = QLabel()
+        self.labelStatus.setFixedHeight(45)
+        self.labelStatus.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layoutInputsAndLabels.addWidget(labelEduId, 0,0)
         layoutInputsAndLabels.addWidget(labelName, 0,1)
         layoutInputsAndLabels.addWidget(self.inputEduId, 1,0)
@@ -55,7 +56,7 @@ class educationsWindowAdding(QWidget):
         layoutBtns.addWidget(btnAdd)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
-        layoutItems.addWidget(labelStatus)
+        layoutItems.addWidget(self.labelStatus)
         self.table = QtWidgets.QTableView()
         self.clmns = ["Код образования", "Тип образования"]
         lst = educationsTable.show_educations_table()
@@ -70,7 +71,8 @@ class educationsWindowAdding(QWidget):
     def adding(self):
         eduId = self.inputEduId.text()
         eduType = self.inputName.text()
-        educationsTable.add_to_educations_table(edu_id=eduId, eduType=eduType)
+        if educationsTable.add_to_educations_table(edu_id=eduId, eduType=eduType) == "repeat":
+            self.labelStatus.setText("Код уже добавлен")
         self.inputEduId.clear()
         self.inputName.clear()
         lst = educationsTable.show_educations_table()
@@ -92,14 +94,15 @@ class educationsWindowDeletion(QWidget):
         btnDel = QPushButton(text = "Удалить")
         btnDel.setFixedSize(170, 30)
         labelId = QLabel("Код образования(число)", )
-        labelStatus = QLabel()
-        labelStatus.setFixedHeight(45)
+        self.labelStatus = QLabel()
+        self.labelStatus.setFixedHeight(45)
+        self.labelStatus.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layoutInputsAndLabels.addWidget(labelId, 0,0)
         layoutInputsAndLabels.addWidget(self.inputId, 1,0)
         layoutBtns.addWidget(btnDel)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
-        layoutItems.addWidget(labelStatus)
+        layoutItems.addWidget(self.labelStatus)
         self.table = QtWidgets.QTableView()
         self.clmns = ["Код образования", "Тип образования"]
         lst = educationsTable.show_educations_table()
@@ -113,7 +116,10 @@ class educationsWindowDeletion(QWidget):
         
     def deletion(self):
         eduId = self.inputId.text()
-        educationsTable.delete_from_education_table(edu_id=eduId)
+        if educationsTable.delete_from_education_table(edu_id=eduId) == "FK error":
+            self.labelStatus.setText("Код образования присвоен сотрудникам")
+        if educationsTable.delete_from_education_table(edu_id=eduId) == "Not in table":
+            self.labelStatus.setText("Ключа нет в таблице")
         lst = educationsTable.show_educations_table()
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
@@ -136,8 +142,9 @@ class educationsWindowChanging(QWidget):
         btnChange.setFixedSize(170, 30)
         labelEduId = QLabel("Код образования(число)")
         labelNameNew = QLabel("Тип образования(строка) новое")
-        labelStatus = QLabel()
-        labelStatus.setFixedHeight(45)
+        self.labelStatus = QLabel()
+        self.labelStatus.setFixedHeight(45)
+        self.labelStatus.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layoutInputsAndLabels.addWidget(labelEduId, 0,0)
         layoutInputsAndLabels.addWidget(labelNameNew, 0,1)
         layoutInputsAndLabels.addWidget(self.inputEduId, 1,0)
@@ -145,7 +152,7 @@ class educationsWindowChanging(QWidget):
         layoutBtns.addWidget(btnChange)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
-        layoutItems.addWidget(labelStatus)
+        layoutItems.addWidget(self.labelStatus)
         self.table = QtWidgets.QTableView()
         self.clmns = ["Код образования", "Тип образования"]
         lst = educationsTable.show_educations_table()
@@ -155,12 +162,12 @@ class educationsWindowChanging(QWidget):
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
         self.setLayout(layout)
-
         btnChange.clicked.connect(self.changing)
     def changing(self):
         eduId = self.inputEduId.text()
         eduType = self.inputNameNew.text()
-        educationsTable.update_education_table(edu_id=eduId, eduType=eduType)
+        if educationsTable.update_education_table(edu_id=eduId, eduType=eduType) == "Not in table":
+            self.labelStatus.setText("Ключа нет в таблице")
         self.inputEduId.clear()
         self.inputNameNew.clear()
         lst = educationsTable.show_educations_table()
@@ -223,14 +230,15 @@ class unitsWindowAdding(QWidget):
         btnAdd = QPushButton(text = "Добавить")
         btnAdd.setFixedSize(170, 30)
         labelName = QLabel("Отделения(строка)" )
-        labelStatus = QLabel()
-        labelStatus.setFixedHeight(45)
+        self.labelStatus = QLabel()
+        self.labelStatus.setFixedHeight(45)
+        self.labelStatus.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layoutInputsAndLabels.addWidget(labelName, 0,0)
         layoutInputsAndLabels.addWidget(self.inputName, 1,0)
         layoutBtns.addWidget(btnAdd)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
-        layoutItems.addWidget(labelStatus)
+        layoutItems.addWidget(self.labelStatus)
         self.table = QtWidgets.QTableView()
         self.clmns = ["Код отделения", "Отделение"]
         lst = unitsTable.show_units_table()
@@ -240,12 +248,12 @@ class unitsWindowAdding(QWidget):
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
         self.setLayout(layout)
-
         btnAdd.clicked.connect(self.adding)
     def adding(self):
         unitName = self.inputName.text()
         self.inputName.clear()
-        unitsTable.add_to_units_table(unit = unitName)
+        if unitsTable.add_to_units_table(unit = unitName) == "repeat":
+            self.labelStatus.setText("Отделение уже добавлено")
         lst = unitsTable.show_units_table()
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
@@ -265,14 +273,15 @@ class unitsWindowDeletion(QWidget):
         btnDel = QPushButton(text = "Удалить")
         btnDel.setFixedSize(170, 30)
         labelId = QLabel("Код отделения(число)", )
-        labelStatus = QLabel()
-        labelStatus.setFixedHeight(45)
+        self.labelStatus = QLabel()
+        self.labelStatus.setFixedHeight(45)
+        self.labelStatus.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layoutInputsAndLabels.addWidget(labelId, 0,0)
         layoutInputsAndLabels.addWidget(self.inputId, 1,0)
         layoutBtns.addWidget(btnDel)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
-        layoutItems.addWidget(labelStatus)
+        layoutItems.addWidget(self.labelStatus)
         self.table = QtWidgets.QTableView()
         self.clmns = ["Код отделения", "Отделение"]
         lst = unitsTable.show_units_table()
@@ -286,7 +295,10 @@ class unitsWindowDeletion(QWidget):
         
     def deletion(self):
         unitId = self.inputId.text()
-        unitsTable.delete_from_education_table(unit_id=unitId)
+        if unitsTable.delete_from_units_table(unit_id=unitId) == "FK error":
+            self.labelStatus.setText("Данное отделение есть у сотрудников")
+        if unitsTable.delete_from_units_table(unit_id=unitId) == "Not in table":
+            self.labelStatus.setText("Ключа нет в таблице")
         lst = unitsTable.show_units_table()
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
@@ -309,8 +321,9 @@ class unitsWindowChanging(QWidget):
         btnChange.setFixedSize(170, 30)
         labelId = QLabel("Код отделения(число)", )
         labelNameNew = QLabel("Отделение(строка) новое", )
-        labelStatus = QLabel()
-        labelStatus.setFixedHeight(45)
+        self.labelStatus = QLabel()
+        self.labelStatus.setFixedHeight(45)
+        self.labelStatus.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layoutInputsAndLabels.addWidget(labelId, 0,0)
         layoutInputsAndLabels.addWidget(labelNameNew, 0,1)
         layoutInputsAndLabels.addWidget(self.inputId, 1,0)
@@ -318,7 +331,7 @@ class unitsWindowChanging(QWidget):
         layoutBtns.addWidget(btnChange)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
-        layoutItems.addWidget(labelStatus)
+        layoutItems.addWidget(self.labelStatus)
         self.table = QtWidgets.QTableView()
         self.clmns = ["Код отделения", "Отделение"]
         lst = unitsTable.show_units_table()
@@ -332,7 +345,8 @@ class unitsWindowChanging(QWidget):
     def changing(self):
         unitId = self.inputId.text()
         unit = self.inputNameNew.text()
-        unitsTable.update_education_table(unit_id=unitId, unit = unit)
+        if unitsTable.update_units_table(unit_id=unitId, unit = unit) == "Not in table":
+            self.labelStatus.setText("Ключа нет в таблице")
         self.inputId.clear()
         self.inputNameNew.clear()
         lst = unitsTable.show_units_table()
@@ -398,14 +412,15 @@ class positionsWindowAdding(QWidget):
         btnAdd = QPushButton(text = "Добавить")
         btnAdd.setFixedSize(170, 30)
         labelName = QLabel("Должность(строка)")
-        labelStatus = QLabel()
-        labelStatus.setFixedHeight(45)
+        self.labelStatus = QLabel()
+        self.labelStatus.setFixedHeight(45)
+        self.labelStatus.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layoutInputsAndLabels.addWidget(labelName, 0,0)
         layoutInputsAndLabels.addWidget(self.inputName, 1,0)
         layoutBtns.addWidget(btnAdd)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
-        layoutItems.addWidget(labelStatus)
+        layoutItems.addWidget(self.labelStatus)
         self.table = QtWidgets.QTableView()
         self.clmns = ["Код должности", "Должность"]
         lst = positionsTable.show_positions_table()
@@ -415,12 +430,13 @@ class positionsWindowAdding(QWidget):
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
         self.setLayout(layout)
-
         btnAdd.clicked.connect(self.adding)
+        
     def adding(self):
         postName = self.inputName.text()
         self.inputName.clear()
-        positionsTable.add_to_positions_table(post = postName)
+        if positionsTable.add_to_positions_table(post = postName) == "repeat":
+            self.labelStatus.setText("Должность уже добавлена")
         lst = positionsTable.show_positions_table()
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
@@ -440,14 +456,15 @@ class positionsWindowDeletion(QWidget):
         btnDel = QPushButton(text = "Удалить")
         btnDel.setFixedSize(170, 30)
         labelId = QLabel("Код должности(число)")
-        labelStatus = QLabel()
-        labelStatus.setFixedHeight(45)
+        self.labelStatus = QLabel()
+        self.labelStatus.setFixedHeight(45)
+        self.labelStatus.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layoutInputsAndLabels.addWidget(labelId, 0,0)
         layoutInputsAndLabels.addWidget(self.inputId, 1,0)
         layoutBtns.addWidget(btnDel)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
-        layoutItems.addWidget(labelStatus)
+        layoutItems.addWidget(self.labelStatus)
         self.table = QtWidgets.QTableView()
         self.clmns = ["Код должности", "Должность"]
         lst = positionsTable.show_positions_table()
@@ -462,7 +479,10 @@ class positionsWindowDeletion(QWidget):
     def deletion(self):
         postId = self.inputId.text()
         self.inputId.clear()
-        positionsTable.delete_from_positions_table(post_id = postId)
+        if positionsTable.delete_from_positions_table(post_id = postId) == "FK error":
+            self.labelStatus.setText("Данная должность есть у сотридников")
+        if positionsTable.delete_from_positions_table(post_id = postId) == "Not in table":
+            self.labelStatus.setText("Ключа нет в таблице")
         lst = positionsTable.show_positions_table()
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
@@ -485,8 +505,9 @@ class positionsWindowChanging(QWidget):
         btnChange.setFixedSize(170, 30)
         labelId = QLabel("Код должности(число)" )
         labelNameNew = QLabel("Должность(строка) новая")
-        labelStatus = QLabel()
-        labelStatus.setFixedHeight(45)
+        self.labelStatus = QLabel()
+        self.labelStatus.setFixedHeight(45)
+        self.labelStatus.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layoutInputsAndLabels.addWidget(labelId ,0,0)
         layoutInputsAndLabels.addWidget(labelNameNew, 0,1)
         layoutInputsAndLabels.addWidget(self.inputId, 1,0)
@@ -494,7 +515,7 @@ class positionsWindowChanging(QWidget):
         layoutBtns.addWidget(btnChange)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
-        layoutItems.addWidget(labelStatus)
+        layoutItems.addWidget(self.labelStatus)
         self.table = QtWidgets.QTableView()
         self.clmns = ["Код должности", "Должность"]
         lst = positionsTable.show_positions_table()
@@ -509,7 +530,8 @@ class positionsWindowChanging(QWidget):
     def changing(self):
         postId = self.inputId.text()
         post = self.inputNameNew.text()
-        positionsTable.update_positions_table(post_id=postId, post = post)
+        if positionsTable.update_positions_table(post_id=postId, post = post) == "Not in table":
+            self.labelStatus.setText("Ключа нет в таблице")
         self.inputId.clear()
         self.inputNameNew.clear()
         lst = positionsTable.show_positions_table()
@@ -563,6 +585,7 @@ class positionsWindow(QWidget):
 class employeesWindowAdding(QWidget):
     def __init__(self):
         super().__init__()
+        lst = employeesTable.show_employees_table()
         self.setWindowTitle("Добавление сотрудника")
         self.setFixedSize(QSize(900, 200))
         layoutInputsAndLabels = QGridLayout()
@@ -576,6 +599,8 @@ class employeesWindowAdding(QWidget):
         btnAdd.setFixedSize(170, 30)
         labelName = QLabel("ФИО(строка)")
         labelPhoneNUmber = QLabel("номер телефона(строка)")
+        self.comboBoxEducations = QComboBox()
+        self.comboBoxEducations.addItems([str(i[0]) for i in educationsTable.show_educations_table()])
         labelEduId = QLabel("Код образования")
         labelStatus = QLabel()
         labelStatus.setFixedHeight(45)
@@ -584,26 +609,24 @@ class employeesWindowAdding(QWidget):
         layoutInputsAndLabels.addWidget(labelEduId, 0,2)
         layoutInputsAndLabels.addWidget(self.inputName, 1,0)
         layoutInputsAndLabels.addWidget(self.inputPhoneNumber, 1,1)
-        layoutInputsAndLabels.addWidget(self.inputEduId, 1,2)
+        layoutInputsAndLabels.addWidget(self.comboBoxEducations, 1,2)
         layoutBtns.addWidget(btnAdd)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        self.clmns = ["Код сотрудника", "ФИО", "Номер телефона", "Код образования" ]
-        lst = employeesTable.show_employees_table()
+        self.clmns = ["Код сотрудника", "ФИО", "Номер телефона", "Тип образования" ]
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
         self.setLayout(layout)
-
         btnAdd.clicked.connect(self.adding)
     def adding(self):
         surname = self.inputName.text()
         phoneNum = self.inputPhoneNumber.text()
-        eduId = self.inputEduId.text()
+        eduId = int(self.comboBoxEducations.currentText())
         self.inputName.clear()
         self.inputPhoneNumber.clear()
         self.inputEduId.clear()
@@ -638,7 +661,7 @@ class employeesWindowDeletion(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        self.clmns = ["Код сотрудника", "ФИО", "Номер телефона", "Код образования" ]
+        self.clmns = ["Код сотрудника", "ФИО", "Номер телефона", "Тип образования" ]
         lst = employeesTable.show_employees_table()
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
@@ -692,7 +715,7 @@ class employeesWindowChanging(QWidget):
         layoutItems.addLayout(layoutBtns)
         layoutItems.addWidget(labelStatus)
         self.table = QtWidgets.QTableView()
-        self.clmns = ["Код сотрудника", "ФИО", "Номер телефона", "Код образования" ]
+        self.clmns = ["Код сотрудника", "ФИО", "Номер телефона", "Тип образования" ]
         lst = employeesTable.show_employees_table()
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
@@ -737,7 +760,7 @@ class employeesWindow(QWidget):
         layoutItems.addWidget(btnRemoveEmployees)
         layoutItems.addWidget(btnEditEmployees)
         self.table = QtWidgets.QTableView()
-        clmns = ["ID", "ФИО", "Номер телефона", "Код образования" ]
+        clmns = ["Код сотрудника", "ФИО", "Номер телефона", "Тип образования" ]
         lst = employeesTable.show_employees_table()
         data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = clmns)
         self.model = TableModel(data)
@@ -1013,7 +1036,7 @@ class stringsWindow(QWidget):
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setFixedSize(QSize(500, 400))
+        self.setFixedSize(QSize(700, 400))
         self.setWindowTitle("Главное окно")
         
         btnEducations = QPushButton(text = "Образование")
@@ -1024,14 +1047,23 @@ class MainWindow(QWidget):
         btnPositions.setFixedSize(140, 60)
         btnEmployees = QPushButton(text = "Сотрудники")
         btnEmployees.setFixedSize(140, 60)
+        btnByEducations = QPushButton(text = "По образованиям")
+        btnByEducations.setFixedSize(140, 60)
+        btnByUnits = QPushButton(text = "По отделением")
+        btnByUnits.setFixedSize(140, 60)
+        btnByPositions = QPushButton(text = "По должностям")
+        btnByPositions.setFixedSize(140, 60)
         btnStrings = QPushButton(text = "Записи назначений")
-        btnStrings.setFixedSize(140, 60)
-        layout = QVBoxLayout()
-        layout.addWidget(btnEducations)
-        layout.addWidget(btnUnits)
-        layout.addWidget(btnPositions)
-        layout.addWidget(btnEmployees)
-        layout.addWidget(btnStrings)
+        btnStrings.setFixedSize(140,60)
+        layout = QGridLayout()
+        layout.addWidget(btnEducations,0,0)
+        layout.addWidget(btnUnits,0,1)
+        layout.addWidget(btnPositions,0,2)
+        layout.addWidget(btnEmployees,0,3)
+        layout.addWidget(btnByEducations,1,0)
+        layout.addWidget(btnByUnits,1,1)
+        layout.addWidget(btnByPositions,1,2)
+        layout.addWidget(btnStrings, 1,3)
         self.setLayout(layout)
         
         btnEducations.clicked.connect(self.show_education_window)
@@ -1039,6 +1071,7 @@ class MainWindow(QWidget):
         btnPositions.clicked.connect(self.show_positions_window)
         btnEmployees.clicked.connect(self.show_employees_window)
         btnStrings.clicked.connect(self.show_strings_window)
+
         
     def show_education_window(self):
         self.educations = educationsWindow()

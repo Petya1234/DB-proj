@@ -10,14 +10,27 @@ class educationsTable():
         return sorted(lst)
 
     def add_to_educations_table(edu_id,eduType):
-        cursor.execute("INSERT INTO educations (edu_id,edu) VALUES (%s,%s)", (edu_id,eduType))
-        conn.commit()
-
+        try:
+            cursor.execute("INSERT INTO educations (edu_id,edu) VALUES (%s,%s)", (edu_id,eduType))
+            conn.commit()
+        except (psycopg2.errors.UniqueViolation):
+            conn.commit()
+            return "repeat"
+        
     def delete_from_education_table(edu_id):
-        cursor.execute("DELETE FROM educations WHERE edu_id=%s", (edu_id,))
-        conn.commit()
-
+        if edu_id not in [i[0] for i in educationsTable.show_educations_table()]:
+            conn.commit()
+            return "Not in table"
+        try:
+            cursor.execute("DELETE FROM educations WHERE edu_id=%s", (edu_id,))
+            conn.commit()
+        except (psycopg2.errors.ForeignKeyViolation):
+            conn.commit()
+            return "FK error"
     def update_education_table(edu_id, eduType):
+        if edu_id not in [i[0] for i in educationsTable.show_educations_table()]:
+            conn.commit()
+            return "Not in table"
         cursor.execute("UPDATE educations SET edu =%s WHERE edu_id=%s", (eduType, edu_id))
         conn.commit()
         
@@ -29,14 +42,29 @@ class unitsTable():
         return sorted(lst)
 
     def add_to_units_table(unit):
-        cursor.execute("INSERT INTO units (unit) VALUES (%s)", (unit,))
-        conn.commit()
+        try:
+            cursor.execute("INSERT INTO units (unit) VALUES (%s)", (unit,))
+            conn.commit()
+        except (psycopg2.errors.UniqueViolation):
+            conn.commit()
+            return "repeat"
+       
 
-    def delete_from_education_table(unit_id):
-        cursor.execute("DELETE FROM units WHERE id_units=%s", (unit_id,))
-        conn.commit()
+    def delete_from_units_table(unit_id):
+        if unit_id not in [i[0] for i in unitsTable.show_units_table()]:
+            conn.commit()
+            return "Not in table"
+        try:
+            cursor.execute("DELETE FROM units WHERE id_units=%s", (unit_id,))
+            conn.commit()
+        except (psycopg2.errors.ForeignKeyViolation):
+            conn.commit()
+            return "FK error"
 
-    def update_education_table(unit_id, unit):
+    def update_units_table(unit_id, unit):
+        if unit_id not in [i[0] for i in unitsTable.show_units_table()]:
+            conn.commit()
+            return "Not in table"
         cursor.execute("UPDATE units SET unit =%s WHERE id_units=%s", (unit, unit_id))
         conn.commit()
         
@@ -48,27 +76,45 @@ class positionsTable():
         return sorted(lst)
 
     def add_to_positions_table(post):
-        cursor.execute("INSERT INTO positions (post) VALUES (%s)", (post,))
-        conn.commit()
-
+        try:
+            cursor.execute("INSERT INTO positions (post) VALUES (%s)", (post,))
+            conn.commit()
+        except (psycopg2.errors.UniqueViolation):
+            conn.commit()
+            return "repeat"
+            
     def delete_from_positions_table(post_id):
-        cursor.execute("DELETE FROM positions WHERE id_post=%s", (post_id,))
-        conn.commit()
+        if post_id not in [i[0] for i in positionsTable.show_positions_table()]:
+            conn.commit()
+            return "Not in table"
+        try:
+            cursor.execute("DELETE FROM positions WHERE id_post=%s", (post_id,))
+            conn.commit()
+        except (psycopg2.errors.ForeignKeyViolation):
+            conn.commit()
+            return "FK error"
 
     def update_positions_table(post_id, post):
+        if post_id not in [i[0] for i in positionsTable.show_positions_table()]:
+            conn.commit()
+            return "Not in table"
         cursor.execute("UPDATE positions SET post =%s WHERE id_post=%s", (post, post_id))
         conn.commit()
         
 
 class employeesTable():
     def show_employees_table():
-        cursor.execute("SELECT * FROM employees")
+        cursor.execute("SELECT  id_employee, surname, phone_number, edu FROM employees JOIN educations ON employees.edu_id = educations.edu_id")
         lst = cursor.fetchall()
         return sorted(lst)
 
     def add_to_employees_table(surname, phone_num, edu_id):
-        cursor.execute("INSERT INTO employees (surname, phone_number, edu_id) VALUES (%s,%s,%s)", (surname,phone_num, edu_id))
+        try:
+            cursor.execute("INSERT INTO employees (surname, phone_number, edu_id) VALUES (%s,%s,%s)", (surname,phone_num, edu_id))
+        except Exception as e:
+            print(type(e))
         conn.commit()
+        
 
     def delete_from_employees_table(employee_id):
         cursor.execute("DELETE FROM employees WHERE id_employee=%s", (employee_id,))
