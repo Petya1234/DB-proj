@@ -37,6 +37,18 @@ class educationsTable():
         
 
 class unitsTable():
+    def show_units_table_by_name(unit):
+        cursor.execute("SELECT id_units FROM units WHERE unit = %s", (unit,))
+        unitId = cursor.fetchall()[0]
+        cursor.execute("SELECT DISTINCT id_employee FROM string_a WHERE id_units = %s", (unitId,))
+        employeesId = cursor.fetchall()
+        employeesNames = []
+        for item in employeesId:
+            cursor.execute("SELECT surname FROM employees WHERE id_employee = %s",(item[0],))
+            name = cursor.fetchall()[0]
+            employeesNames.append(name)
+        return employeesNames
+        
     def show_units_table():
         cursor.execute("SELECT * FROM units")
         lst = cursor.fetchall()
@@ -71,6 +83,18 @@ class unitsTable():
         
 
 class positionsTable():
+    def show_positions_table_by_name(post):
+        cursor.execute("SELECT id_post FROM positions WHERE post = %s", (post,))
+        postId = cursor.fetchall()[0]
+        cursor.execute("SELECT DISTINCT id_employee FROM string_a WHERE id_post = %s", (postId,))
+        employeesId = cursor.fetchall()
+        employeesNames = []
+        for item in employeesId:
+            cursor.execute("SELECT surname FROM employees WHERE id_employee = %s",(item[0],))
+            name = cursor.fetchall()[0]
+            employeesNames.append(name)
+        return employeesNames
+    
     def show_positions_table():
         cursor.execute("SELECT * FROM positions")
         lst = cursor.fetchall()
@@ -101,9 +125,12 @@ class positionsTable():
             return "Not in table"
         cursor.execute("UPDATE positions SET post =%s WHERE id_post=%s", (post, post_id))
         conn.commit()
-        
 
 class employeesTable():
+    def show_employees_table_by_edu(edu_id = None):
+        cursor.execute("SELECT surname FROM employees WHERE edu_id =%s", (edu_id,))
+        lst = cursor.fetchall()
+        return sorted(lst)
     def show_employees_table():
         cursor.execute("SELECT  id_employee, surname, phone_number, edu FROM employees JOIN educations ON employees.edu_id = educations.edu_id")
         lst = cursor.fetchall()
@@ -142,16 +169,20 @@ class stringsTable():
         cursor.execute("SELECT id_string, surname, assign_date, post, unit, salary FROM string_a JOIN employees ON string_a.id_employee = employees.id_employee JOIN positions ON string_a.id_post = positions.id_post \
                         JOIN units ON string_a.id_units = units.id_units")
         lst = cursor.fetchall()
-        return lst
+        return sorted(lst)
     
     def show_string_a_table():
         cursor.execute("SELECT surname, assign_date, post, unit, salary FROM string_a JOIN employees ON string_a.id_employee = employees.id_employee JOIN positions ON string_a.id_post = positions.id_post \
                         JOIN units ON string_a.id_units = units.id_units")
         lst = cursor.fetchall()
-        return lst
+        return sorted(lst)
 
     def add_to_string_a_table(empl_id, assign_date, post_id, unit_id, salary):
-        if not(assign_date) or not(datetime.strptime(assign_date, "%Y-%m-%d")) or datetime.strptime(assign_date, "%Y-%m-%d").date() > datetime.now().date():
+        try:
+            datetime.strptime(assign_date, "%Y-%m-%d")
+        except:
+            return "Invalid date"
+        if datetime.strptime(assign_date, "%Y-%m-%d").date() > datetime.now().date():
             return "Invalid date"
         if salary == "":
             return "Invalid salary"
@@ -169,15 +200,26 @@ class stringsTable():
         cursor.execute("DELETE FROM string_a WHERE id_string=%s", (string_id,))
         conn.commit()
 
-    def update_string_a_table(string_id,empl_id, assign_date, post_id, unit_id, salary):
-        if empl_id:
-            cursor.execute("UPDATE string_a SET id_employee=%s WHERE id_string=%s", (empl_id,string_id))
+    def update_string_a_table(string_id, assign_date, salary):
+        try:
+            datetime.strptime(assign_date, "%Y-%m-%d")
+        except:
+            return "Invalid date"
+        if datetime.strptime(assign_date, "%Y-%m-%d").date() > datetime.now().date():
+            return "Invalid date"
+        if salary == "":
+            conn.commit()
+            return "Invalid salary"
+        if string_id not in [x[0] for x in stringsTable.show_string_a_table_with_ids()]:
+            conn.commit()
+            return "Not in table"
         if assign_date:
-            cursor.execute("UPDATE string_a SET assign_date=%s WHERE id_string=%s", (assign_date,string_id))
-        if post_id:
-            cursor.execute("UPDATE string_a SET id_post=%s WHERE id_string=%s", (post_id,string_id))
-        if unit_id:
-            cursor.execute("UPDATE string_a SET id_units=%s WHERE id_string=%s", (unit_id,string_id))
+            try:
+                cursor.execute("UPDATE string_a SET assign_date=%s WHERE id_string=%s", (assign_date,string_id))
+                conn.commit()
+            except (psycopg2.errors.InvalidDatetimeFormat):
+                conn.commit()
+                return "Invalid date"
         if salary:
-            cursor.execute("UPDATE employees SET salary=%s WHERE id_string=%s", (salary,string_id))
+            cursor.execute("UPDATE string_a SET salary=%s WHERE id_string=%s", (salary,string_id))
         conn.commit()

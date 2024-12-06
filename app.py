@@ -31,6 +31,40 @@ class TableModel(QtCore.QAbstractTableModel):
                 return str(self._data.index[section])
             
 
+#Окно "по образованиям"
+class checkByEducations(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("По образованиям")
+        layoutInputsAndLabels = QVBoxLayout()
+        layoutItems = QVBoxLayout()
+        layout = QHBoxLayout()
+        self.inputEducationIdLabel = QLabel("Коды образования")
+        self.comboBoxEducations = QComboBox()
+        self.comboBoxEducations.addItems([str(x[0]) for x in educationsTable.show_educations_table()])
+        layoutInputsAndLabels.addWidget(self.inputEducationIdLabel)
+        layoutInputsAndLabels.addWidget(self.comboBoxEducations)
+        layoutItems.addLayout(layoutInputsAndLabels)
+        self.table = QtWidgets.QTableView()
+        self.clmns = ["Сотрудники"]
+        lst = employeesTable.show_employees_table_by_edu(educationsTable.show_educations_table()[0][0])
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        layout.addLayout(layoutItems)
+        layout.addWidget(self.table)
+        self.table.resizeColumnsToContents()
+        self.setLayout(layout)
+        self.comboBoxEducations.currentTextChanged.connect(self.showByEdu)
+            
+    def showByEdu(self):
+        eduId = int(self.comboBoxEducations.currentText())
+        lst = employeesTable.show_employees_table_by_edu(eduId)
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        self.table.resizeColumnsToContents()
+            
 #Добавление образования
 class educationsWindowAdding(QWidget):
     def __init__(self):
@@ -226,6 +260,42 @@ class educationsWindow(QWidget):
         self.educationChanging.show()
 
 
+
+#Окно "по отделениям"
+class checkByUnits(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("По отделениям")
+        layoutInputsAndLabels = QVBoxLayout()
+        layoutItems = QVBoxLayout()
+        layout = QHBoxLayout()
+        self.inputUnitLabel = QLabel("Отделения")
+        self.comboBoxUnits = QComboBox()
+        self.comboBoxUnits.addItems([str(x[1]) for x in unitsTable.show_units_table()])
+        layoutInputsAndLabels.addWidget(self.inputUnitLabel)
+        layoutInputsAndLabels.addWidget(self.comboBoxUnits)
+        layoutItems.addLayout(layoutInputsAndLabels)
+        self.table = QtWidgets.QTableView()
+        self.clmns = ["Сотрудники"]
+        lst = unitsTable.show_units_table_by_name(unitsTable.show_units_table()[0][1])
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        layout.addLayout(layoutItems)
+        layout.addWidget(self.table)
+        self.table.resizeColumnsToContents()
+        self.setLayout(layout)
+        self.comboBoxUnits.currentTextChanged.connect(self.showByUnit)
+            
+    def showByUnit(self):
+        unit = self.comboBoxUnits.currentText()
+        lst = unitsTable.show_units_table_by_name(unit)
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        self.table.resizeColumnsToContents()
+        
+        
 #Добавление отделения
 class unitsWindowAdding(QWidget):
     def __init__(self):
@@ -416,7 +486,40 @@ class unitsWindow(QWidget):
         self.unitsChanging.show()
 
 
-
+#Окно "по должностям"
+class checkByPositions(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("По должностям")
+        layoutInputsAndLabels = QVBoxLayout()
+        layoutItems = QVBoxLayout()
+        layout = QHBoxLayout()
+        self.inputPostLabel = QLabel("Должности")
+        self.comboBoxPositions = QComboBox()
+        self.comboBoxPositions.addItems([str(x[1]) for x in positionsTable.show_positions_table()])
+        layoutInputsAndLabels.addWidget(self.inputPostLabel)
+        layoutInputsAndLabels.addWidget(self.comboBoxPositions)
+        layoutItems.addLayout(layoutInputsAndLabels)
+        self.table = QtWidgets.QTableView()
+        self.clmns = ["Сотрудники"]
+        lst = positionsTable.show_positions_table_by_name(positionsTable.show_positions_table()[0][1])
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        layout.addLayout(layoutItems)
+        layout.addWidget(self.table)
+        self.table.resizeColumnsToContents()
+        self.setLayout(layout)
+        self.comboBoxPositions.currentTextChanged.connect(self.showByPosition)
+            
+    def showByPosition(self):
+        unit = self.comboBoxPositions.currentText()
+        lst = positionsTable.show_positions_table_by_name(unit)
+        self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
+        self.model = TableModel(self.data)
+        self.table.setModel(self.model)
+        self.table.resizeColumnsToContents()
+        
 #Добавление должности
 class positionsWindowAdding(QWidget):
     def __init__(self):
@@ -910,7 +1013,7 @@ class stringsWindowAdding(QWidget):
 class stringsWindowDeletion(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Добавление строки")
+        self.setWindowTitle("Удаление строки")
         self.setFixedSize(QSize(1200, 200))
         layoutInputsAndLabels = QGridLayout()
         layoutBtns = QHBoxLayout()
@@ -959,7 +1062,7 @@ class stringsWindowDeletion(QWidget):
 class stringsWindowChanging(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Добавление строки")
+        self.setWindowTitle("Изменение строки")
         self.setFixedSize(QSize(1600, 200))
         layoutInputsAndLabels = QGridLayout()
         layoutBtns = QHBoxLayout()
@@ -976,64 +1079,52 @@ class stringsWindowChanging(QWidget):
         btnChange = QPushButton(text = "Изменить")
         btnChange.setFixedSize(170, 30)
         labelId= QLabel("ID строки для изменения")
-        labelIdEmployee= QLabel("Код сотрудника(число) новый")
         labelDate = QLabel("Дата назначения новая")
-        labelIdPost = QLabel("Код должности новый")
-        labelIdUnit = QLabel("Код подразделения новый")
         labelSalary = QLabel("ЗП новая")
-        labelStatus = QLabel()
-        labelStatus.setFixedHeight(45)
+        self.labelStatus = QLabel()
+        self.labelStatus.setFixedHeight(45)
+        self.labelStatus.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layoutInputsAndLabels.addWidget(labelId, 0,0)
-        layoutInputsAndLabels.addWidget(labelIdEmployee, 0,1)
-        layoutInputsAndLabels.addWidget(labelDate, 0,2)
-        layoutInputsAndLabels.addWidget(labelIdPost, 0,3)
-        layoutInputsAndLabels.addWidget(labelIdUnit,0,4)
-        layoutInputsAndLabels.addWidget(labelSalary, 0,5)
+        layoutInputsAndLabels.addWidget(labelDate, 0,1)
+        layoutInputsAndLabels.addWidget(labelSalary, 0,2)
         layoutInputsAndLabels.addWidget(self.inputId, 1,0)
-        layoutInputsAndLabels.addWidget(self.inputIdEmployee, 1,1)
-        layoutInputsAndLabels.addWidget(self.inputDate, 1,2)
-        layoutInputsAndLabels.addWidget(self.inputIdPost, 1,3)
-        layoutInputsAndLabels.addWidget(self.inputIdUnit, 1,4)
-        layoutInputsAndLabels.addWidget(self.inputSalary, 1,5)
+        layoutInputsAndLabels.addWidget(self.inputDate, 1,1)
+        layoutInputsAndLabels.addWidget(self.inputSalary, 1,2)
         layoutBtns.addWidget(btnChange)
         layoutItems.addLayout(layoutInputsAndLabels)
         layoutItems.addLayout(layoutBtns)
-        layoutItems.addWidget(labelStatus)
+        layoutItems.addWidget(self.labelStatus)
         self.table = QtWidgets.QTableView()
-        self.clmns = ["Сотрудник","Дата назначения", "Должность", "Отделение", "Зарплата"]
-        lst = stringsTable.show_string_a_table()
+        self.clmns = ["id строки", "Сотрудник", "Дата назначения", "ЗП"]
+        lst = [(x[0], x[1], x[2],x[-1]) for x in stringsTable.show_string_a_table_with_ids()]
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
         layout.addLayout(layoutItems)
         layout.addWidget(self.table)
         self.setLayout(layout)
-        header = self.table.horizontalHeader()       
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.resizeColumnsToContents()
         btnChange.clicked.connect(self.changing)
     def changing(self):
-        stringId = self.inputId.text()
-        emlpId = self.inputIdEmployee.text()
+        stringId = int(self.inputId.text())
         date = self.inputDate.text()
-        postId = self.inputIdPost.text()
-        unitId = self.inputIdUnit.text()
         salary = self.inputSalary.text()
         self.inputId.clear()
-        self.inputIdEmployee.clear()
         self.inputDate.clear()
-        self.inputIdPost.clear()
-        self.inputIdUnit.clear()
         self.inputSalary.clear()
-        stringsTable.update_string_a_table(string_id=stringId, empl_id=emlpId, assign_date=date, post_id=postId, unit_id=unitId, salary=salary)
-        lst = stringsTable.show_string_a_table()
+        res = stringsTable.update_string_a_table(string_id=stringId, assign_date=date, salary=salary)
+        if res == "Invalid date":
+            self.labelStatus.setText("Неверная дата или она не задана")
+        elif res == "Invalid salary":
+            self.labelStatus.setText("Неверная зп или она не задана")
+        elif res == "Not in table":
+            self.labelStatus.setText("Ключа нет в таблице")
+        else:
+            self.labelStatus.setText("Успешно")
+        lst = [(x[0], x[1], x[2],x[-1]) for x in stringsTable.show_string_a_table_with_ids()]
         self.data = pd.DataFrame(lst, index = range(1,len(lst) + 1), columns = self.clmns)
         self.model = TableModel(self.data)
         self.table.setModel(self.model)
-        window.strings.table.setModel(self.model)
 
 #Главное окно по записям
 class stringsWindow(QWidget):
@@ -1117,7 +1208,9 @@ class MainWindow(QWidget):
         btnPositions.clicked.connect(self.show_positions_window)
         btnEmployees.clicked.connect(self.show_employees_window)
         btnStrings.clicked.connect(self.show_strings_window)
-
+        btnByEducations.clicked.connect(self.show_byEducations_window)
+        btnByUnits.clicked.connect(self.show_byUnits_window)
+        btnByPositions.clicked.connect(self.show_byPositions_window)
         
     def show_education_window(self):
         self.educations = educationsWindow()
@@ -1139,7 +1232,17 @@ class MainWindow(QWidget):
         self.strings = stringsWindow()
         self.strings.show()
         
+    def show_byEducations_window(self):
+        self.byEducation = checkByEducations()
+        self.byEducation.show()
+    
+    def show_byUnits_window(self):
+        self.byUnits = checkByUnits()
+        self.byUnits.show()
 
+    def show_byPositions_window(self):
+        self.byPositions = checkByPositions()
+        self.byPositions.show()
         
 app = QApplication([])
 
